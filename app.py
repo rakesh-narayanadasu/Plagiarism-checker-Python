@@ -25,7 +25,7 @@ def check_plagiarism():
         for student_b, text_vector_b in new_vectors:
             sim_score = similarity(text_vector_a, text_vector_b)[0][1]
             student_pair = sorted((student_a, student_b))
-            score = (student_pair[0], student_pair[1], sim_score)
+            score = (student_pair[0], student_pair[1], round(sim_score,2))
             plagiarism_results.add(score)
     return plagiarism_results
 
