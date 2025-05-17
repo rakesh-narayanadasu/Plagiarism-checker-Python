@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+reviews:
+  profile: "balanced" # Balanced tone: thorough but not overly strict
+  request_changes_workflow: false # Suggest changes without requiring them
+  high_level_summary: true # Provide a summary of changes in pull requests
+  poem: false # Disable whimsical poems in reviews
+  review_status: true # Show review status in pull requests
+  collapse_walkthrough: false # Keep walkthroughs expanded for visibility
+  auto_review:
+    enabled: true # Automatically review pull requests
+    drafts: false # Skip draft pull requests
+chat:
+  auto_reply: true # Respond to @coderabbitai mentions
+path_instructions:
+  - path: "**/*.py"
+    instructions: |
+      ### Python Code Review Instructions
+      1. **Linting**:
+         - Ensure code adheres to PEP 8 style guidelines.
+         - Flag issues that would be caught by `pylint` (e.g., unused variables, missing imports) or `ruff` (e.g., E722 bare except).
+         - Check for consistent use of single or double quotes (prefer double quotes per PEP 8).
+      2. **Formatting**:
+         - Verify code is formatted with `black` or `ruff format` (e.g., 88-character line length, proper spacing).
+         - Flag inconsistent indentation or trailing whitespace.
+      3. **Unit Testing**:
+         - For new or modified functions/classes, ensure corresponding unit tests exist in `tests/` directory.
+         - Check that tests follow `pytest` conventions (e.g., test functions prefixed with `test_`, descriptive names).
+         - Flag missing tests for edge cases or error conditions.
+      4. **Code Coverage**:
+         - Suggest adding tests if new code lacks coverage (aim for at least 80% coverage, as measured by `coverage.py`).
+         - Flag untested branches or conditionals in the code.
+      5. **Best Practices**:
+         - Ensure functions and classes have docstrings following Google or NumPy style.
+         - Check for type hints (PEP 484) on function arguments and return types, especially in public APIs.
+         - Flag overly complex functions (e.g., high cyclomatic complexity or excessive length).
+         - Ensure error handling with specific exceptions (avoid bare `except` clauses).
+         - Verify logging is used appropriately (e.g., `logging` module instead of `print`).
+         - Check for secure coding practices (e.g., avoid `eval`, validate inputs in API endpoints).
+  - path: "tests/**.py"
+    instructions: |
+      ### Unit Test Review Instructions
+      1. Verify test files follow `pytest` best practices:
+         - Test functions start with `test_`.
+         - Tests are descriptive and cover happy paths, edge cases, and error conditions.
+      2. Check for proper use of fixtures and parameterization (e.g., `@pytest.mark.parametrize`).
+      3. Ensure tests are isolated and don't rely on external dependencies (use mocks where needed).
+      4. Flag redundant or overly verbose tests.
+      5. Suggest improvements for test readability (e.g., clear assertions, minimal setup code).
+  - path: "**/__init__.py"
+    instructions: |
+      ### Package Initialization Review
+      1. Ensure `__init__.py` files are minimal and only include necessary imports or `__all__` definitions.
+      2. Flag unnecessary code or logic in `__init__.py`.
+knowledge_base:
+  learnings:
+    scope: auto # Learn from repository-specific feedback
+  issues: auto # Pull context from issue trackers
+  jira:
+    project_keys: [] # Add Jira project keys if applicable
+  linear:
+    team_keys: [] # Add Linear team keys if applicable
+tools:
+  ast-grep:
+    - rule: |
+        kind: except_clause
+        pattern: except:
+        message: Avoid bare `except` clauses. Specify exception types for better error handling.
+    - rule: |
+        kind: call
+        pattern: print(...)
+        message: Replace `print` with `logging` module for production code.
+    - rule: |
+        kind: function_definition
+        not:
+          has:
+            kind: string
+        message: Add a docstring to functions for better documentation.
